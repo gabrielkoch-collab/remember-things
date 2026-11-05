@@ -1,1 +1,780 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemorySaver - Estudantes</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card-enter {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(12px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .completed-strike {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-full transition-colors duration-200 flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid font-bold fa-brain text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                        MemorySaver
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">Não deixe seu cérebro pifar no semestre!</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle -->
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all" title="Alternar Tema">
+                    <i id="themeIcon" class="fa-solid fa-moon text-lg"></i>
+                </button>
+
+                <!-- Action Button Mobile/Desktop -->
+                <button onclick="openModal()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-md shadow-blue-500/20 hover:shadow-lg transition-all active:scale-95 text-sm">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden sm:inline">Salvar Memória</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Banner Motivacional + Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Frase Motivacional -->
+            <div class="lg:col-span-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-2xl p-5 text-white shadow-xl flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-graduation-cap text-9xl"></i>
+                </div>
+                <div class="flex justify-between items-start mb-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md text-white">
+                        <i class="fa-solid fa-sparkles text-amber-300"></i> Dica de Hoje
+                    </span>
+                    <button onclick="updateMotivationalQuote()" class="text-white/80 hover:text-white transition-transform hover:rotate-180 duration-300 p-1">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                </div>
+                <div>
+                    <p id="motivationalQuote" class="text-base sm:text-lg font-medium italic mb-2">
+                        "Se você não anota, o esquecimento vence. Anote tudo, até a sala de aula!"
+                    </p>
+                    <p id="motivationalAuthor" class="text-xs text-blue-200 font-semibold uppercase tracking-wider">— Sobrevivente da Faculdade</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Seu Retrospecto</h3>
+                <div class="grid grid-cols-2 gap-4 my-auto">
+                    <div class="bg-blue-50 dark:bg-slate-800/60 p-3 rounded-xl border border-blue-100 dark:border-slate-700/50">
+                        <span class="text-2xl font-black text-blue-600 dark:text-blue-400" id="statSaved">0</span>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">Memórias Salvas</p>
+                    </div>
+                    <div class="bg-emerald-50 dark:bg-slate-800/60 p-3 rounded-xl border border-emerald-100 dark:border-slate-700/50">
+                        <span class="text-2xl font-black text-emerald-600 dark:text-emerald-400" id="statCompleted">0</span>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 font-medium mt-0.5">Concluídas / Lembradas</p>
+                    </div>
+                </div>
+                <!-- Mini Progress -->
+                <div class="mt-3">
+                    <div class="flex justify-between text-xs text-slate-500 mb-1 font-medium">
+                        <span>Progresso Geral</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-emerald-500 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Presets Rápidos (Atalhos de 1 Clique) -->
+        <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-500"></i> Atalhos Rápidos de Estudante (1-Clique)
+            </h2>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="addPreset('room')" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700/80 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700">
+                    <i class="fa-solid fa-location-dot text-blue-500"></i> Sala / Bloco da Aula
+                </button>
+                <button onclick="addPreset('pdf')" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-purple-50 hover:text-purple-600 dark:hover:bg-slate-700/80 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700">
+                    <i class="fa-solid fa-file-pdf text-purple-500"></i> Onde salvei o PDF?
+                </button>
+                <button onclick="addPreset('exam')" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-slate-700/80 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Prova / Entrega Próxima
+                </button>
+                <button onclick="addPreset('abnt')" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-slate-700/80 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700">
+                    <i class="fa-solid fa-book-bookmark text-emerald-500"></i> Formatação / Regra ABNT
+                </button>
+                <button onclick="addPreset('password')" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-slate-700/80 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 transition flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700">
+                    <i class="fa-solid fa-key text-amber-500"></i> Login do Portal
+                </button>
+            </div>
+        </section>
+
+        <!-- Filtros e Busca -->
+        <section class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+            <!-- Categorias (Scrollable horizontal on mobile) -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none text-sm" id="categoryFilterContainer">
+                <!-- Injected by JS -->
+            </div>
+
+            <!-- Busca e Filtro de Prioridade -->
+            <div class="flex items-center gap-2">
+                <div class="relative flex-1 md:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="renderReminders()" placeholder="Buscar memórias..." class="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition">
+                </div>
+                <select id="priorityFilter" onchange="renderReminders()" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                    <option value="ALL">Todas Prioridades</option>
+                    <option value="HIGH">🔴 Alta Prioridade</option>
+                    <option value="MEDIUM">🟡 Média Prioridade</option>
+                    <option value="LOW">🟢 Baixa Prioridade</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- Grid de Cards de Lembretes -->
+        <div id="remindersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Cards rendered via JS -->
+        </div>
+
+        <!-- Mensagem de Estado Vazio -->
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center bg-white dark:bg-slate-900/50 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-6">
+            <div class="w-16 h-16 bg-blue-50 dark:bg-slate-800 text-blue-500 rounded-full flex items-center justify-center text-2xl mb-4">
+                <i class="fa-solid fa-face-smile"></i>
+            </div>
+            <h3 class="text-base font-semibold text-slate-800 dark:text-slate-200 mb-1">Nenhuma memória encontrada!</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-4">Sua mente está limpa por aqui. Adicione um novo lembrete para não esquecer nada importante do semestre.</p>
+            <button onclick="openModal()" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl text-xs transition">
+                <i class="fa-solid fa-plus"></i> Criar Lembrete
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400">
+            MemorySaver &copy; 2026 — Criado para salvar estudantes do esquecimento diário.
+        </div>
+    </footer>
+
+    <!-- MODAL: Adicionar / Editar Lembrete -->
+    <div id="reminderModal" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden card-enter">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+                <h3 id="modalTitle" class="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 text-base">
+                    <i class="fa-solid fa-lightbulb text-amber-500"></i> Salvar Nova Memória
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="reminderForm" onsubmit="saveReminder(event)" class="p-6 space-y-4">
+                <input type="hidden" id="reminderId">
+
+                <!-- Title -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                        O que você VAI esquecer se não anotar? <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="inputTitle" required placeholder="Ex: Entregar TCC, Sala de Cálculo II, Formato ABNT..." class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Categoria & Prioridade -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                            Categoria
+                        </label>
+                        <select id="inputCategory" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="EXAMS">🎓 Provas & Trabalhos</option>
+                            <option value="LOCATIONS">📍 Salas & Locais</option>
+                            <option value="TIPS">📚 Dicas & ABNT</option>
+                            <option value="LINKS">📁 Links & Arquivos</option>
+                            <option value="GENERAL">💡 Geral / Rápido</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                            Prioridade / Urgência
+                        </label>
+                        <select id="inputPriority" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="HIGH">🔴 Alta Urgência</option>
+                            <option value="MEDIUM" selected>🟡 Média Urgência</option>
+                            <option value="LOW">🟢 Baixa Urgência</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Data / Hora -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                        Data / Prazo limite (Opcional)
+                    </label>
+                    <input type="datetime-local" id="inputDueDate" class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Notas Detalhadas -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                        Detalhes / Observações
+                    </label>
+                    <textarea id="inputDetails" rows="3" placeholder="Ex: Salvo na pasta Downloads/Aulas; Falar com o João do grupo; Formatação em Arial 12..." class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <!-- Pin Option -->
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="inputPinned" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                    <label for="inputPinned" class="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none flex items-center gap-1.5">
+                        <i class="fa-solid fa-thumbtack text-amber-500"></i> Fixar no topo dos lembretes
+                    </label>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-xl shadow-md transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-check"></i> Salvar Lembrete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none text-xs font-medium">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600 text-base"></i>
+        <span id="toastMessage">Ação concluída!</span>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // CONFIGURAÇÕES E CATEGORIAS
+        const CATEGORIES = {
+            EXAMS: { name: 'Provas & Trabalhos', icon: 'fa-graduation-cap', bg: 'bg-rose-500/10', text: 'text-rose-600 dark:text-rose-400', border: 'border-rose-200 dark:border-rose-900/50' },
+            LOCATIONS: { name: 'Salas & Locais', icon: 'fa-location-dot', bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-900/50' },
+            TIPS: { name: 'Dicas & ABNT', icon: 'fa-book-bookmark', bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900/50' },
+            LINKS: { name: 'Links & Arquivos', icon: 'fa-folder-open', bg: 'bg-purple-500/10', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-900/50' },
+            GENERAL: { name: 'Geral / Rápido', icon: 'fa-lightbulb', bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-900/50' }
+        };
+
+        const MOTIVATIONAL_QUOTES = [
+            { quote: "Se você não anota, o esquecimento vence. Anote tudo!", author: "Sobrevivente do TCC" },
+            { quote: "Revisar por 5 minutos hoje economiza 5 horas na véspera da prova.", author: "Lei do Estudante Esperto" },
+            { quote: "Você acha que vai lembrar da sala amanhã, mas não vai. Anota aqui!", author: "Voz da Experiência" },
+            { quote: "O cérebro serve para ter ideias, não para guardar prazos de 23:59.", author: "David Allen Adaptação" },
+            { quote: "Pequenas anotações evitam grandes desespero nas provas finais.", author: "Mentor Acadêmico" }
+        ];
+
+        // MOCK DATA INICIAL
+        const DEFAULT_REMINDERS = [
+            {
+                id: '1',
+                title: 'Entregar Artigo de Metodologia até 23:59',
+                category: 'EXAMS',
+                priority: 'HIGH',
+                dueDate: new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 16),
+                details: 'Enviar pelo portal em PDF. Não esquecer das referências no padrão ABNT!',
+                completed: false,
+                pinned: true,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '2',
+                title: 'Aula de Cálculo II - Prédio B, Sala 304',
+                category: 'LOCATIONS',
+                priority: 'MEDIUM',
+                dueDate: '',
+                details: 'Próximo à cantina principal. Levar calculadora científica.',
+                completed: false,
+                pinned: true,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '3',
+                title: 'Formatação ABNT - Margens do TCC',
+                category: 'TIPS',
+                priority: 'LOW',
+                dueDate: '',
+                details: 'Superior: 3cm | Esquerda: 3cm | Inferior: 2cm | Direita: 2cm. Espaçamento 1,5.',
+                completed: false,
+                pinned: false,
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '4',
+                title: 'Senha do Wi-Fi da Biblioteca e Portal',
+                category: 'GENERAL',
+                priority: 'MEDIUM',
+                dueDate: '',
+                details: 'Login: matricula2026 / Pass: Estudar#2026',
+                completed: true,
+                pinned: false,
+                createdAt: new Date().toISOString()
+            }
+        ];
+
+        // STATE
+        let reminders = [];
+        let currentFilterCategory = 'ALL';
+
+        // INICIALIZAÇÃO
+        window.onload = function() {
+            initTheme();
+            loadReminders();
+            renderCategoryFilters();
+            renderReminders();
+            updateMotivationalQuote();
+        };
+
+        // CARREGAR DADOS
+        function loadReminders() {
+            const saved = localStorage.getItem('memory_saver_data');
+            if (saved) {
+                try {
+                    reminders = JSON.parse(saved);
+                } catch(e) {
+                    reminders = DEFAULT_REMINDERS;
+                }
+            } else {
+                reminders = DEFAULT_REMINDERS;
+                saveToLocalStorage();
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('memory_saver_data', JSON.stringify(reminders));
+            updateStats();
+        }
+
+        // TEMA DARK / LIGHT
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon text-slate-600';
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon text-slate-600';
+            showToast(isDark ? 'Modo Escuro Ativado' : 'Modo Claro Ativado', 'fa-circle-half-stroke');
+        }
+
+        // MOTIVATIONAL QUOTES
+        function updateMotivationalQuote() {
+            const random = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+            document.getElementById('motivationalQuote').innerText = `"${random.quote}"`;
+            document.getElementById('motivationalAuthor').innerText = `— ${random.author}`;
+        }
+
+        // ESTATÍSTICAS
+        function updateStats() {
+            const total = reminders.length;
+            const completed = reminders.filter(r => r.completed).length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('statSaved').innerText = total;
+            document.getElementById('statCompleted').innerText = completed;
+            document.getElementById('progressPercent').innerText = `${percent}%`;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+        }
+
+        // RENDER FILTROS
+        function renderCategoryFilters() {
+            const container = document.getElementById('categoryFilterContainer');
+            let html = `
+                <button onclick="setCategoryFilter('ALL')" class="px-3 py-1.5 rounded-xl font-medium text-xs whitespace-nowrap transition ${currentFilterCategory === 'ALL' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                    Todos (${reminders.length})
+                </button>
+            `;
+
+            for (const [key, cat] of Object.entries(CATEGORIES)) {
+                const count = reminders.filter(r => r.category === key).length;
+                const active = currentFilterCategory === key;
+                html += `
+                    <button onclick="setCategoryFilter('${key}')" class="px-3 py-1.5 rounded-xl font-medium text-xs whitespace-nowrap transition flex items-center gap-1.5 ${active ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                        <i class="fa-solid ${cat.icon}"></i>
+                        ${cat.name} (${count})
+                    </button>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        function setCategoryFilter(categoryKey) {
+            currentFilterCategory = categoryKey;
+            renderCategoryFilters();
+            renderReminders();
+        }
+
+        // RENDER CARD DE LEMBRETES
+        function renderReminders() {
+            const grid = document.getElementById('remindersGrid');
+            const emptyState = document.getElementById('emptyState');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const priorityFilter = document.getElementById('priorityFilter').value;
+
+            // Filtragem
+            let filtered = reminders.filter(item => {
+                const matchCategory = currentFilterCategory === 'ALL' || item.category === currentFilterCategory;
+                const matchPriority = priorityFilter === 'ALL' || item.priority === priorityFilter;
+                const matchSearch = item.title.toLowerCase().includes(searchQuery) || (item.details && item.details.toLowerCase().includes(searchQuery));
+                return matchCategory && matchPriority && matchSearch;
+            });
+
+            // Ordenação: Fixados no topo -> Não concluídos -> Por Data de Criação
+            filtered.sort((a, b) => {
+                if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                updateStats();
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            grid.innerHTML = filtered.map(item => {
+                const cat = CATEGORIES[item.category] || CATEGORIES.GENERAL;
+                
+                // Urgência Badges
+                let priorityBadge = '';
+                if (item.priority === 'HIGH') priorityBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900">🔴 Alta</span>';
+                else if (item.priority === 'MEDIUM') priorityBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900">🟡 Média</span>';
+                else priorityBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">🟢 Baixa</span>';
+
+                // Format Due Date
+                let dueDateFormatted = '';
+                if (item.dueDate) {
+                    const dateObj = new Date(item.dueDate);
+                    const formatted = dateObj.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                    const isPast = dateObj < new Date() && !item.completed;
+                    dueDateFormatted = `
+                        <div class="mt-2 text-[11px] font-medium flex items-center gap-1 ${isPast ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-500 dark:text-slate-400'}">
+                            <i class="fa-regular fa-clock"></i> Prazo: ${formatted} ${isPast ? '(Atrasado!)' : ''}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="card-enter bg-white dark:bg-slate-900 border ${item.pinned ? 'border-amber-300 dark:border-amber-500/50 shadow-md' : 'border-slate-200 dark:border-slate-800'} rounded-2xl p-4 flex flex-col justify-between hover:shadow-lg transition-all duration-200 relative group">
+                        <div>
+                            <!-- Header do Card -->
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${cat.bg} ${cat.text} border ${cat.border}">
+                                    <i class="fa-solid ${cat.icon}"></i> ${cat.name}
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    ${priorityBadge}
+                                    <button onclick="togglePin('${item.id}')" class="text-slate-300 hover:text-amber-500 dark:text-slate-600 dark:hover:text-amber-400 p-1 transition" title="${item.pinned ? 'Desfixar' : 'Fixar no Topo'}">
+                                        <i class="fa-solid fa-thumbtack ${item.pinned ? 'text-amber-500 dark:text-amber-400 rotate-45' : ''}"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Título -->
+                            <h3 class="font-bold text-sm text-slate-800 dark:text-slate-100 ${item.completed ? 'completed-strike' : ''} mb-1 leading-snug">
+                                ${escapeHtml(item.title)}
+                            </h3>
+
+                            <!-- Detalhes -->
+                            ${item.details ? `
+                                <p class="text-xs text-slate-600 dark:text-slate-400 ${item.completed ? 'completed-strike' : ''} whitespace-pre-line leading-relaxed mb-2">
+                                    ${escapeHtml(item.details)}
+                                </p>
+                            ` : ''}
+
+                            ${dueDateFormatted}
+                        </div>
+
+                        <!-- Footer Ações do Card -->
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                            <!-- Toggle Completed Button -->
+                            <button onclick="toggleComplete('${item.id}')" class="flex items-center gap-1.5 text-xs font-medium ${item.completed ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400'} transition">
+                                <i class="fa-regular ${item.completed ? 'fa-circle-check text-emerald-500 text-sm' : 'fa-circle'}"></i>
+                                <span>${item.completed ? 'Lembrado!' : 'Marcar como lembrado'}</span>
+                            </button>
+
+                            <!-- Editar & Excluir -->
+                            <div class="flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="editReminder('${item.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition" title="Editar">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </button>
+                                <button onclick="deleteReminder('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg transition" title="Excluir">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            updateStats();
+        }
+
+        // PRESETS RÁPIDOS
+        function addPreset(type) {
+            openModal();
+            const titleInput = document.getElementById('inputTitle');
+            const categorySelect = document.getElementById('inputCategory');
+            const detailsInput = document.getElementById('inputDetails');
+            const prioritySelect = document.getElementById('inputPriority');
+
+            if (type === 'room') {
+                titleInput.value = 'Aula de [Matéria] - Prédio / Sala';
+                categorySelect.value = 'LOCATIONS';
+                detailsInput.value = 'Bloco: \nSala: \nProfessor: ';
+                prioritySelect.value = 'MEDIUM';
+            } else if (type === 'pdf') {
+                titleInput.value = 'PDF da Aula de [Nome da Disciplina]';
+                categorySelect.value = 'LINKS';
+                detailsInput.value = 'Guardado na pasta: Downloads/Semestre\nLink do Drive: ';
+                prioritySelect.value = 'LOW';
+            } else if (type === 'exam') {
+                titleInput.value = 'Prova Final / Entrega de Trabalho';
+                categorySelect.value = 'EXAMS';
+                detailsInput.value = 'Conteúdo que vai cair: \nRegras de entrega: ';
+                prioritySelect.value = 'HIGH';
+            } else if (type === 'abnt') {
+                titleInput.value = 'Regra de Citação / Formatação ABNT';
+                categorySelect.value = 'TIPS';
+                detailsInput.value = 'Exemplo de Citação Direta Curta: (SOBRENOME, Ano, p. X) dentro do parágrafo entre aspas.';
+                prioritySelect.value = 'LOW';
+            } else if (type === 'password') {
+                titleInput.value = 'Login / Credenciais do Portal Acadêmico';
+                categorySelect.value = 'GENERAL';
+                detailsInput.value = 'Usuário: \nMatrícula: \nSenha: ';
+                prioritySelect.value = 'MEDIUM';
+            }
+        }
+
+        // AÇÕES NOS LEMBRETES
+        function toggleComplete(id) {
+            reminders = reminders.map(r => {
+                if (r.id === id) {
+                    const status = !r.completed;
+                    showToast(status ? 'Maravilha! Menos uma preocupação na cabeça.' : 'Lembrete reativado.', status ? 'fa-circle-check' : 'fa-rotate-left');
+                    return { ...r, completed: status };
+                }
+                return r;
+            });
+            saveToLocalStorage();
+            renderReminders();
+        }
+
+        function togglePin(id) {
+            reminders = reminders.map(r => {
+                if (r.id === id) {
+                    const pinned = !r.pinned;
+                    showToast(pinned ? 'Fixado no topo!' : 'Removido do topo.', 'fa-thumbtack');
+                    return { ...r, pinned: pinned };
+                }
+                return r;
+            });
+            saveToLocalStorage();
+            renderReminders();
+        }
+
+        function deleteReminder(id) {
+            reminders = reminders.filter(r => r.id !== id);
+            saveToLocalStorage();
+            renderCategoryFilters();
+            renderReminders();
+            showToast('Lembrete excluído com sucesso.', 'fa-trash-can');
+        }
+
+        function editReminder(id) {
+            const r = reminders.find(item => item.id === id);
+            if (!r) return;
+
+            document.getElementById('reminderId').value = r.id;
+            document.getElementById('inputTitle').value = r.title;
+            document.getElementById('inputCategory').value = r.category;
+            document.getElementById('inputPriority').value = r.priority;
+            document.getElementById('inputDueDate').value = r.dueDate || '';
+            document.getElementById('inputDetails').value = r.details || '';
+            document.getElementById('inputPinned').checked = r.pinned || false;
+
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-blue-500"></i> Editar Memória';
+            openModal(true);
+        }
+
+        function saveReminder(event) {
+            event.preventDefault();
+            const id = document.getElementById('reminderId').value;
+            const title = document.getElementById('inputTitle').value.trim();
+            const category = document.getElementById('inputCategory').value;
+            const priority = document.getElementById('inputPriority').value;
+            const dueDate = document.getElementById('inputDueDate').value;
+            const details = document.getElementById('inputDetails').value.trim();
+            const pinned = document.getElementById('inputPinned').checked;
+
+            if (!title) return;
+
+            if (id) {
+                // Modo Edição
+                reminders = reminders.map(r => r.id === id ? {
+                    ...r,
+                    title,
+                    category,
+                    priority,
+                    dueDate,
+                    details,
+                    pinned
+                } : r);
+                showToast('Lembrete atualizado!', 'fa-floppy-disk');
+            } else {
+                // Modo Novo
+                const newReminder = {
+                    id: Date.now().toString(),
+                    title,
+                    category,
+                    priority,
+                    dueDate,
+                    details,
+                    pinned,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                reminders.unshift(newReminder);
+                showToast('Nova memória salva com sucesso!', 'fa-brain');
+            }
+
+            saveToLocalStorage();
+            renderCategoryFilters();
+            renderReminders();
+            closeModal();
+        }
+
+        // CONTROLE DO MODAL
+        function openModal(isEdit = false) {
+            if (!isEdit) {
+                document.getElementById('reminderForm').reset();
+                document.getElementById('reminderId').value = '';
+                document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-lightbulb text-amber-500"></i> Salvar Nova Memória';
+            }
+            const modal = document.getElementById('reminderModal');
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('reminderModal');
+            modal.classList.add('hidden');
+        }
+
+        // TOAST NOTIFICATION
+        function showToast(message, iconClass = 'fa-circle-check') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = message;
+            toastIcon.className = `fa-solid ${iconClass} text-emerald-400 dark:text-emerald-600 text-base`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // UTILS
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
